@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Brain, 
-  ChevronRight, 
-  RotateCcw, 
-  CheckCircle2, 
-  XCircle, 
-  Loader2, 
+import {
+  Brain,
+  ChevronRight,
+  RotateCcw,
+  CheckCircle2,
+  XCircle,
+  Loader2,
   Settings2,
   Trophy,
   BookOpen,
@@ -18,7 +18,7 @@ import { QuizData, Difficulty } from './types';
 export default function App() {
   const [topic, setTopic] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
-  const [numQuestions, setNumQuestions] = useState(5);
+  const [numQuestions, setNumQuestions] = useState(50);
   const [context, setContext] = useState('');
   const [loading, setLoading] = useState(false);
   const [quizData, setQuizData] = useState<QuizData | null>(null);
@@ -51,7 +51,7 @@ export default function App() {
 
   const handleOptionSelect = (optionId: number) => {
     if (selectedOptionId !== null) return;
-    
+
     setSelectedOptionId(optionId);
     if (optionId === quizData?.quiz.questions[currentQuestionIndex].correctAnswerId) {
       setScore(prev => prev + 1);
@@ -79,7 +79,7 @@ export default function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-6">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="text-center space-y-6"
@@ -101,7 +101,7 @@ export default function App() {
     const percentage = Math.round((score / quizData.quiz.questions.length) * 100);
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white p-6 flex flex-col items-center justify-center">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-2xl bg-[#141414] border border-white/10 rounded-3xl p-8 md:p-12 text-center space-y-8"
@@ -109,7 +109,7 @@ export default function App() {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-500/10 text-blue-500 mb-4">
             <Trophy className="w-10 h-10" />
           </div>
-          
+
           <div className="space-y-2">
             <h2 className="text-4xl font-bold">Quiz Complete!</h2>
             <p className="text-gray-400">Here's how you performed on {quizData.quiz.topic}</p>
@@ -158,7 +158,7 @@ export default function App() {
 
           {/* Progress Bar */}
           <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-            <motion.div 
+            <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${((currentQuestionIndex + 1) / quizData.quiz.questions.length) * 100}%` }}
               className="h-full bg-blue-500"
@@ -182,9 +182,9 @@ export default function App() {
                 {currentQuestion.options.map((option) => {
                   const isCorrect = option.id === currentQuestion.correctAnswerId;
                   const isSelected = selectedOptionId === option.id;
-                  
+
                   let buttonClass = "w-full p-5 text-left rounded-2xl border transition-all duration-200 flex items-center justify-between group ";
-                  
+
                   if (!isAnswered) {
                     buttonClass += "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20";
                   } else {
@@ -213,7 +213,7 @@ export default function App() {
               </div>
 
               {isAnswered && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-6 pt-4"
@@ -256,7 +256,7 @@ export default function App() {
         <div className="space-y-12">
           {/* Hero Section */}
           <div className="space-y-6 text-center md:text-left">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 text-xs font-bold uppercase tracking-widest"
@@ -264,30 +264,30 @@ export default function App() {
               <Brain className="w-4 h-4" />
               AI-Powered Learning
             </motion.div>
-            
-            <motion.h1 
+
+            <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
               className="text-5xl md:text-7xl font-bold tracking-tight leading-[0.9]"
-            >
+            ><></>
               GENERATE <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">SMART QUIZZES</span>
             </motion.h1>
-            
-            <motion.p 
+
+            <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
               className="text-lg md:text-xl text-gray-400 max-w-xl"
             >
-              Create professional multiple-choice quizzes on any topic in seconds. 
+              Create professional multiple-choice quizzes on any topic in seconds.
               Powered by Gemini AI for accuracy and depth.
             </motion.p>
           </div>
 
           {/* Configuration Form */}
-          <motion.form 
+          <motion.form
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -320,11 +320,10 @@ export default function App() {
                         key={d}
                         type="button"
                         onClick={() => setDifficulty(d)}
-                        className={`py-3 rounded-xl border text-sm font-medium capitalize transition-all ${
-                          difficulty === d 
-                            ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20' 
+                        className={`py-3 rounded-xl border text-sm font-medium capitalize transition-all ${difficulty === d
+                            ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20'
                             : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
-                        }`}
+                          }`}
                       >
                         {d}
                       </button>
@@ -343,11 +342,10 @@ export default function App() {
                         key={n}
                         type="button"
                         onClick={() => setNumQuestions(n)}
-                        className={`py-3 rounded-xl border text-sm font-medium transition-all ${
-                          numQuestions === n 
-                            ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20' 
+                        className={`py-3 rounded-xl border text-sm font-medium transition-all ${numQuestions === n
+                            ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20'
                             : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
-                        }`}
+                          }`}
                       >
                         {n}
                       </button>
