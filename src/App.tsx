@@ -321,8 +321,8 @@ export default function App() {
                         type="button"
                         onClick={() => setDifficulty(d)}
                         className={`py-3 rounded-xl border text-sm font-medium capitalize transition-all ${difficulty === d
-                            ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20'
-                            : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                          ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
                           }`}
                       >
                         {d}
@@ -343,8 +343,8 @@ export default function App() {
                         type="button"
                         onClick={() => setNumQuestions(n)}
                         className={`py-3 rounded-xl border text-sm font-medium transition-all ${numQuestions === n
-                            ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20'
-                            : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                          ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
                           }`}
                       >
                         {n}
