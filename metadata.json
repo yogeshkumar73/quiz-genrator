@@ -1,0 +1,5 @@
+{
+  "name": "AI MCQ Quiz Generator",
+  "description": "Generate custom multiple-choice quizzes on any topic using Gemini AI. Features difficulty levels, explanations, and instant evaluation.",
+  "requestFramePermissions": []
+}
