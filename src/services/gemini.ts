@@ -6,7 +6,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 export async function generateQuiz(
   topic: string,
   difficulty: Difficulty = 'medium',
-  numQuestions: number = 50,
+  numQuestions: number = 100,
   context?: string
 ): Promise<QuizData> {
   const prompt = `

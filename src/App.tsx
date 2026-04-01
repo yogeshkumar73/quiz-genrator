@@ -18,7 +18,7 @@ import { QuizData, Difficulty } from './types';
 export default function App() {
   const [topic, setTopic] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
-  const [numQuestions, setNumQuestions] = useState(50);
+  const [numQuestions, setNumQuestions] = useState(100);
   const [context, setContext] = useState('');
   const [loading, setLoading] = useState(false);
   const [quizData, setQuizData] = useState<QuizData | null>(null);
@@ -264,13 +264,13 @@ export default function App() {
               <Brain className="w-4 h-4" />
               AI-Powered Learning
             </motion.div>
-
+            <h3>Devloper by IND brother </h3>
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
               className="text-5xl md:text-7xl font-bold tracking-tight leading-[0.9]"
-            ><></> 
+            ><></>
               GENERATE <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">SMART QUIZZES FOR SUCCESS</span>
             </motion.h1>
@@ -337,7 +337,7 @@ export default function App() {
                     Questions
                   </label>
                   <div className="grid grid-cols-3 gap-2">
-                    {[3, 5, 10].map((n) => (
+                    {[10, 50, 100].map((n) => (
                       <button
                         key={n}
                         type="button"
