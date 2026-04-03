@@ -25,24 +25,20 @@ export interface UserStats {
   sessionTimeMinutes: number;
 }
 
-export type Difficulty = 'easy' | 'medium' | 'hard';
-
-export interface QuizQuestion {
-  id: number;
-  question: string;
-  options: { id: number; text: string }[];
-  correctAnswerId: number;
-  correctAnswerText: string;
-  explanation: string;
-  difficulty: string;
-  tags: string[];
-}
-
 export interface QuizData {
   quiz: {
     topic: string;
     difficulty: string;
-    questions: QuizQuestion[];
+    questions: Array<{
+      id: number;
+      question: string;
+      options: Array<{ id: number; text: string }>;
+      correctAnswerId: number;
+      correctAnswerText: string;
+      explanation: string;
+      difficulty: string;
+      tags: string[];
+    }>;
   };
   evaluationLogic: {
     rule: string;
@@ -51,3 +47,5 @@ export interface QuizData {
     showExplanation: boolean;
   };
 }
+
+export type Difficulty = 'easy' | 'medium' | 'hard';
