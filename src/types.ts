@@ -1,36 +1,12 @@
-export type UserTier = 'Normal' | 'Active' | 'VIP';
-
-export interface UserSession {
-  username: string;
-  loginTime: number;
-  lastActive: number;
+export interface Option {
+  id: number;
+  text: string;
 }
 
-export type EventType = 'CLICK' | 'VIEW' | 'SESSION' | 'ACTION';
-
-export interface AppEvent {
-  id: string;
-  userId: string;
-  eventType: EventType;
-  timestamp: number;
-  page?: string;
-  metadata?: Record<string, any>;
-}
-
-export interface UserStats {
-  score: number;
-  tier: UserTier;
-  totalClicks: number;
-  pageViews: number;
-  sessionTimeMinutes: number;
-}
-
-export type Difficulty = 'easy' | 'medium' | 'hard';
-
-export interface QuizQuestion {
+export interface Question {
   id: number;
   question: string;
-  options: { id: number; text: string }[];
+  options: Option[];
   correctAnswerId: number;
   correctAnswerText: string;
   explanation: string;
@@ -42,7 +18,7 @@ export interface QuizData {
   quiz: {
     topic: string;
     difficulty: string;
-    questions: QuizQuestion[];
+    questions: Question[];
   };
   evaluationLogic: {
     rule: string;
@@ -51,3 +27,5 @@ export interface QuizData {
     showExplanation: boolean;
   };
 }
+
+export type Difficulty = 'easy' | 'medium' | 'hard';
