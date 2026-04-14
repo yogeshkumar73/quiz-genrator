@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-
+import './index.css';
 import {
   Brain,
   ChevronRight,
@@ -19,10 +19,13 @@ import { QuizData, Difficulty } from './types';
 import { HEADER_LENGTH } from 'tedious/lib/packet';
 
 export default function App() {
+  const [open, setOpen] = useState(false);
   const [topic, setTopic] = useState('');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   // const [numQuestions, setNumQuestions] = useState(5);
   const [context, setContext] = useState('');
+  //const [bgImage, setBgImage] = useState('');
+  //const [bgImage, setBgImage] = useState('0');
   const [loading, setLoading] = useState(false);
   const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -30,6 +33,50 @@ export default function App() {
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPreviousButton, setShowPreviousButton] = useState(false);
+  const [showNextButton, setShowNextButton] = useState(true);
+  const [showSubmitButton, setShowSubmitButton] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
+
+  //  const [color, setColor] = useState("rgb(255, 0, 0)");
+
+  //const [showInstagram, setShowInstagram] = useState(false);
+  // const scrollToSection = (id: string) => {
+  //   document.getElementById(id)?.scrollIntoView({
+  //     behavior: "smooth",
+  //   });
+  const [color, setColor] = useState("rgb(255,0,0)");
+
+  const images = [
+    "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+    "https://images.unsplash.com/photo-1494526585095-c41746248156",
+    "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
+  ];
+
+  const [bgImage, setBgImage] = useState(images[0]);
+
+  const changeColor = () => {
+    const r = Math.floor(Math.random() * 256);
+    const g = Math.floor(Math.random() * 256);
+    const b = Math.floor(Math.random() * 256);
+
+    setColor(`rgb(${r}, ${g}, ${b})`);
+  };
+
+  const changeImage = () => {
+    const randomIndex = Math.floor(Math.random() * images.length);
+    setBgImage(images[randomIndex] + "?t=" + new Date().getTime());
+  };
+
+  useEffect(() => {
+    changeImage();
+
+    const interval = setInterval(() => {
+      changeImage();
+    }, 3600000); // ✅ correct
+
+    return () => clearInterval(interval);
+  }, []);
 
   const MIN = 1;
   const MAX = 100;
@@ -88,392 +135,488 @@ export default function App() {
     setContext('');
     setError(null);
   };
-
-  const handleGenerateQuiz = async () => {
-    if (!topic.trim()) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const data = await generateQuiz(topic, difficulty, numQuestions, context);
-      setQuizData(data);
-      setCurrentQuestionIndex(0);
-      setScore(0);
+  const handlePreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
       setSelectedOptionId(null);
-      setShowResults(false);
-    } catch (err) {
-      setError('Failed to generate quiz. Please try again.');
-      console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
+  const handleModeChange = () => {
+    setOpen(true);
+    setLoading(true);
+    setError(null);
+    resetQuiz();
+  };
+
+  const handleGenerateQuiz = async () => {
+        if (!topic.trim()) return;
+
+        // setLoading(true);
+        // setError(null);
+
+        try {
+          const data = await generateQuiz(topic, difficulty, numQuestions, context);
+          setQuizData(data);
+          setCurrentQuestionIndex(0);
+          setScore(0);
+          setSelectedOptionId(null);
+          setShowResults(false);
+        } catch (err) {
+          setError('Failed to generate quiz. Please try again.');
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      if (loading) {
+        return (
 
 
 
-      <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center space-y-6"
-        >
-          <div className="relative">
-            <div className="absolute inset-0 blur-3xl bg-blue-500/20 rounded-full" />
-            <Loader2 className="w-16 h-16 animate-spin text-blue-500 mx-auto relative" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold tracking-tight">Generating your quiz...</h2>
-            <p className="text-gray-400">Gemini is crafting questions for "{topic}"</p>
-
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
-
-  if (showResults && quizData) {
-    const percentage = Math.round((score / quizData.quiz.questions.length) * 100);
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white p-6 flex flex-col items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-2xl bg-[#141414] border border-white/10 rounded-3xl p-8 md:p-12 text-center space-y-8"
-        >
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-500/10 text-blue-500 mb-4">
-            <Trophy className="w-10 h-10" />
-          </div>
-
-          <div className="space-y-2">
-            <h2 className="text-4xl font-bold">Quiz Complete!</h2>
-            <p className="text-gray-400">Here's how you performed on {quizData.quiz.topic}</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 py-8">
-            <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
-              <div className="text-3xl font-bold text-blue-500">{score}/{quizData.quiz.questions.length}</div>
-              <div className="text-sm text-gray-400 uppercase tracking-wider font-semibold mt-1">Score</div>
-            </div>
-            <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
-              <div className="text-3xl font-bold text-blue-500">{percentage}%</div>
-              <div className="text-sm text-gray-400 uppercase tracking-wider font-semibold mt-1">Accuracy</div>
-            </div>
-          </div>
-
-          <button
-            onClick={resetQuiz}
-            className="w-full py-4 bg-white text-black font-bold rounded-2xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
-          >
-            <RotateCcw className="w-5 h-5" />
-            Try Another Topic
-          </button>
-          <button
-            onClick={handleGenerateQuiz}
-            className="w-full py-4 bg-white text-black font-bold rounded-2xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
-          >
-            <RotateCcw className="w-5 h-5" />
-            Generate Quiz
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
-
-  if (quizData) {
-    const currentQuestion = quizData.quiz.questions[currentQuestionIndex];
-    const isAnswered = selectedOptionId !== null;
-
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white p-6 flex flex-col items-center">
-        <div className="w-full max-w-3xl space-y-8 mt-12">
-          {/* Progress Header */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="text-xs font-bold text-blue-500 uppercase tracking-widest">Question {currentQuestionIndex + 1} of {quizData.quiz.questions.length}</div>
-              <h1 className="text-xl font-semibold text-gray-300">{quizData.quiz.topic}</h1>
-            </div>
-            <div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 text-sm font-medium">
-              Score: {score}
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+          <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-6">
             <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${((currentQuestionIndex + 1) / quizData.quiz.questions.length) * 100}%` }}
-              className="h-full bg-blue-500"
-            />
-          </div>
-
-          {/* Question Card */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentQuestionIndex}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="bg-[#141414] border border-white/10 rounded-3xl p-8 md:p-10 space-y-8"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center space-y-6"
             >
-              <h2 className="text-2xl md:text-3xl font-medium leading-tight">
-                {currentQuestion.question}
-              </h2>
+              <div className="relative">
+                <div className="absolute inset-0 blur-3xl bg-blue-500/20 rounded-full" />
+                <Loader2 className="w-16 h-16 animate-spin text-blue-500 mx-auto relative" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold tracking-tight">Generating your quiz...</h2>
+                <p className="text-gray-400">Gemini is crafting questions for "{topic}"</p>
 
-              <div className="grid gap-3">
-                {currentQuestion.options.map((option) => {
-                  const isCorrect = option.id === currentQuestion.correctAnswerId;
-                  const isSelected = selectedOptionId === option.id;
+              </div>
+            </motion.div>
+          </div>
+        );
+      }
 
-                  let buttonClass = "w-full p-5 text-left rounded-2xl border transition-all duration-200 flex items-center justify-between group ";
-
-                  if (!isAnswered) {
-                    buttonClass += "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20";
-                  } else {
-                    if (isCorrect) {
-                      buttonClass += "bg-green-500/10 border-green-500/50 text-green-500";
-                    } else if (isSelected) {
-                      buttonClass += "bg-red-500/10 border-red-500/50 text-red-500";
-                    } else {
-                      buttonClass += "bg-white/5 border-white/5 opacity-50";
-                    }
-                  }
-
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleOptionSelect(option.id)}
-                      disabled={isAnswered}
-                      className={buttonClass}
-                    >
-                      <span className="text-lg">{option.text}</span>
-                      {isAnswered && isCorrect && <CheckCircle2 className="w-6 h-6 shrink-0" />}
-                      {isAnswered && isSelected && !isCorrect && <XCircle className="w-6 h-6 shrink-0" />}
-                    </button>
-                  );
-                })}
+      if (showResults && quizData) {
+        const percentage = Math.round((score / quizData.quiz.questions.length) * 100);
+        return (
+          <div className="min-h-screen bg-[#0a0a0a] text-white p-6 flex flex-col items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full max-w-2xl bg-[#141414] border border-white/10 rounded-3xl p-8 md:p-12 text-center space-y-8"
+            >
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-500/10 text-blue-500 mb-4">
+                <Trophy className="w-10 h-10" />
               </div>
 
-              {isAnswered && (
+              <div className="space-y-2">
+                <h2 className="text-4xl font-bold">Quiz Complete!</h2>
+                <p className="text-gray-400">Here's how you performed on {quizData.quiz.topic}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 py-8">
+                <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
+                  <div className="text-3xl font-bold text-blue-500">{score}/{quizData.quiz.questions.length}</div>
+                  <div className="text-sm text-gray-400 uppercase tracking-wider font-semibold mt-1">Score</div>
+                </div>
+                <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
+                  <div className="text-3xl font-bold text-blue-500">{percentage}%</div>
+                  <div className="text-sm text-gray-400 uppercase tracking-wider font-semibold mt-1">Accuracy</div>
+                </div>
+              </div>
+
+              <button
+                onClick={resetQuiz}
+                className="w-full py-4 rgb-button font-bold rounded-2xl flex items-center justify-center gap-2"
+              >
+                <RotateCcw className="w-5 h-5" />
+                Try Another Topic
+              </button>
+              <button
+                onClick={handleGenerateQuiz}
+                className="w-full py-4 rgb-button font-bold rounded-2xl flex items-center justify-center gap-2 mt-4"
+              >
+                <RotateCcw className="w-5 h-5" />
+                Generate Quiz
+              </button>
+              <button
+                onClick={handleSetNumQuestions}
+                className="w-full py-4 rgb-button font-bold rounded-2xl flex items-center justify-center gap-2 mt-4"
+              >Generate Quiz  🙂</button>
+              <button
+                onClick={handlePreviousQuestion}
+                className="w-full py-4 rgb-button font-bold rounded-2xl flex items-center justify-center gap-2 mt-4"
+              >Previous Question</button>
+
+              <button
+                onClick={handleModeChange}
+                className="w-full py-4 rgb-button font-bold rounded-2xl flex items-center justify-center gap-2 mt-4"
+              >Change Mode</button>
+
+            </motion.div>
+          </div>
+        );
+      }
+
+      if (quizData) {
+        const currentQuestion = quizData.quiz.questions[currentQuestionIndex];
+        const isAnswered = selectedOptionId !== null;
+
+        return (
+          <div className="min-h-screen bg-[#0a0a0a] text-white p-6 flex flex-col items-center">
+            <div className="w-full max-w-3xl space-y-8 mt-12">
+              {/* Progress Header */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="text-xs font-bold text-blue-500 uppercase tracking-widest">Question {currentQuestionIndex + 1} of {quizData.quiz.questions.length}</div>
+                  <h1 className="text-xl font-semibold text-gray-300">{quizData.quiz.topic}</h1>
+                </div>
+                <div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 text-sm font-medium">
+                  Score: {score}
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-6 pt-4"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${((currentQuestionIndex + 1) / quizData.quiz.questions.length) * 100}%` }}
+                  className="h-full bg-blue-500"
+                />
+              </div>
+
+              {/* Question Card */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentQuestionIndex}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="bg-[#141414] border border-white/10 rounded-3xl p-8 md:p-10 space-y-8"
                 >
-                  <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-2xl">
-                    <div className="flex items-center gap-2 text-blue-500 mb-2">
-                      <BookOpen className="w-4 h-4" />
-                      <span className="text-xs font-bold uppercase tracking-wider">Explanation</span>
-                    </div>
-                    <p className="text-gray-300 leading-relaxed">
-                      {currentQuestion.explanation}
-                    </p>
+                  <h2 className="text-2xl md:text-3xl font-medium leading-tight">
+                    {currentQuestion.question}
+                  </h2>
+
+                  <div className="grid gap-3">
+                    {currentQuestion.options.map((option) => {
+                      const isCorrect = option.id === currentQuestion.correctAnswerId;
+                      const isSelected = selectedOptionId === option.id;
+
+                      let buttonClass = "w-full p-5 text-left rounded-2xl border transition-all duration-200 flex items-center justify-between group ";
+
+                      if (!isAnswered) {
+                        buttonClass += "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20";
+                      } else {
+                        if (isCorrect) {
+                          buttonClass += "bg-green-500/10 border-green-500/50 text-green-500";
+                        } else if (isSelected) {
+                          buttonClass += "bg-red-500/10 border-red-500/50 text-red-500";
+                        } else {
+                          buttonClass += "bg-white/5 border-white/5 opacity-50";
+                        }
+                      }
+
+                      return (
+                        <button
+                          key={option.id}
+                          onClick={() => handleOptionSelect(option.id)}
+                          disabled={isAnswered}
+                          className={buttonClass}
+                        >
+                          <span className="text-lg">{option.text}</span>
+                          {isAnswered && isCorrect && <CheckCircle2 className="w-6 h-6 shrink-0" />}
+                          {isAnswered && isSelected && !isCorrect && <XCircle className="w-6 h-6 shrink-0" />}
+                        </button>
+                      );
+                    })}
                   </div>
+
+                  {isAnswered && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-6 pt-4"
+                    >
+                      <div className="p-6 bg-blue-500/5 border border-blue-500/20 rounded-2xl">
+                        <div className="flex items-center gap-2 text-blue-500 mb-2">
+                          <BookOpen className="w-4 h-4" />
+                          <span className="text-xs font-bold uppercase tracking-wider">Explanation</span>
+                        </div>
+                        <p className="text-gray-300 leading-relaxed">
+                          {currentQuestion.explanation}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={handleNextQuestion}
+                        className="w-full py-4 rgb-button font-bold rounded-2xl flex items-center justify-center gap-2"
+                      >
+                        {currentQuestionIndex === quizData.quiz.questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </motion.div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+
+        //   <div>
+        //     {/* HEADER */}
+        //     <header className="header">
+        //       <nav>
+        //         <ul>
+        //           <li onClick={() => scrollToSection("home")}>Home</li>
+        //           <li onClick={() => scrollToSection("about")}>About</li>
+        //           <li onClick={() => scrollToSection("contact")}>Contact</li>
+        //         </ul>
+        //       </nav>
+        //     </header>
+
+        //     {/* SECTIONS */}
+        //     <section id="home" className="section">Home Section</section>
+        //     <section id="about" className="section">About Section</section>
+        //     <section id="contact" className="section">Contact Section</section>
+        //   </div>
+        // );
+
+        <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-blue-500/30">
+
+          {/* Background Decorative Elements */}
+          <div
+            className="app-container"
+
+            onClick={changeColor}
+            style={{
+              backgroundImage: `url(${bgImage})`,
+            }}
+
+          >
+            <div
+              className="overlay"
+              style={{
+                backgroundColor: color,
+                opacity: 0.3, // 🔥 THIS FIXES IT
+              }}
+            ></div>
+            <div>
+              {/* Toggle Button */}
+              <button className="menu-btn" onClick={() => setOpen(!open)}>
+                ☰ Menu
+              </button>
+
+              {/* Sliding Sidebar */}
+              <div className={`sidebar ${open ? "open" : ""}`}>
+                <a href="#home">Home</a>
+                <a href="#about" onClick={() => setOpen(false)}>About</a>
+                <a href="#contact">Contact</a>
+                <a href="https://google.com">Go to Google</a>
+                <a href="#quiz">Quiz</a>
+              </div>
+
+              {/* Page Content */}
+              <div className="content">
+
+                <section id="home">Home Section</section>
+                <section id="about">About Section</section>
+                <section id="contact"><a
+                  href="https://www.instagram.com/kdsingh9140?utm_source=qr&igsh=Zm8waDhreHRmbGRp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="instagram-icon"
+                >
+                  <i className="fab fa-instagram slide-icon"></i>
+                </a></section>
+
+              </div>
+
+            </div>
+
+          </div>
+          <section id="quiz">Quiz Section
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-500/10 blur-[120px] rounded-full" />
+              <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-purple-500/10 blur-[120px] rounded-full" />
+            </div>
+
+
+            <main className="relative max-w-4xl mx-auto px-6 py-20 md:py-32">
+              <div className="space-y-12">
+                {/* Hero Section */}
+                <div className="space-y-6 text-center md:text-left">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 text-xs font-bold uppercase tracking-widest"
+                  >
+
+                    <Brain className="w-4 h-4" />
+                    AI-Powered Learning
+                    <bold>DEVLOPED BY KDSINGH😊</bold>
+
+                  </motion.div>
+
+                  <motion.h1
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="text-5xl md:text-7xl font-bold tracking-tight leading-[0.9]"
+                  >
+                    GENERATE <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">SMART QUIZZES</span>
+                  </motion.h1>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-lg md:text-xl text-gray-400 max-w-xl"
+                  >
+                    Create professional multiple-choice quizzes on any topic in seconds.
+                    Powered by AI for accuracy and depth.
+                  </motion.p>
+                </div>
+
+                {/* Configuration Form */}
+                <motion.form
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  onSubmit={handleStartQuiz}
+                  className="grid gap-8 bg-[#141414] border border-white/10 rounded-[32px] p-8 md:p-10"
+                >
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label htmlFor="topic" className="text-xs font-bold text-gray-500 uppercase tracking-widest">Topic</label>
+                      <input
+                        id="topic"
+                        type="text"
+                        placeholder="e.g. Quantum Physics, World History, React Hooks..."
+                        value={topic}
+                        onChange={(e) => setTopic(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-gray-600"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                          <Settings2 className="w-3 h-3" />
+                          Difficulty
+                        </label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {(['easy', 'medium', 'hard'] as Difficulty[]).map((d) => (
+                            <button
+                              key={d}
+                              type="button"
+                              onClick={() => setDifficulty(d)}
+                              className={`py-3 rounded-xl border text-sm font-medium capitalize transition-all ${difficulty === d
+                                ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20'
+                                : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                                }`}
+                            >
+                              {d}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                          <Layout className="w-3 h-3" />
+                          Questions
+                        </label>
+                        <div className="grid grid-cols-3 gap-2">
+
+                          {[1, 5, 10].map((n) => (
+                            <button
+                              key={n}
+                              type="button"
+                              onClick={() => handleSetNumQuestions(n)}
+                              className={`py-3 px-4 rounded-xl border text-sm font-medium transition-all ${numQuestions === n
+                                ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20'
+                                : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                                }`}
+                            >
+                              {n}
+                            </button>
+                          ))}
+                          <div className="flex items-center justify-center gap-4 mt-4">
+                            <button
+                              onClick={() => handleSetNumQuestions(numQuestions - 1)}
+                              disabled={numQuestions === 1}
+                              className="px-4 py-2 bg-white/10 rounded-lg text-white"
+                            >
+                              ➖
+                            </button>
+
+                            <span className="text-lg font-semibold">{numQuestions}</span>
+
+                            <button
+                              onClick={() => handleSetNumQuestions(numQuestions + 1)}
+                              disabled={numQuestions === 10}
+                              className="px-4 py-2 bg-white/10 rounded-lg text-white"
+
+                            >
+                              ➕
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="context" className="text-xs font-bold text-gray-500 uppercase tracking-widest">Context (Optional)
+                        <input
+                          type="range"
+                          min={MIN}
+                          max={MAX}
+                          step={1}
+                          value={numQuestions}
+                          onChange={(e) => handleSetNumQuestions(Number(e.target.value))}
+                          className="w-full mt-4"
+                        />
+
+                        <p className="text-center mt-2 text-gray-300">
+                          Questions: {numQuestions}
+                        </p>
+                      </label>
+                      <textarea
+                        id="context"
+                        placeholder="Paste text here to generate questions specifically from it..."
+                        value={context}
+                        onChange={(e) => setContext(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-gray-600 min-h-[120px] resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm">
+                      {error}
+                    </div>
+                  )}
 
                   <button
-                    onClick={handleNextQuestion}
-                    className="w-full py-4 bg-white text-black font-bold rounded-2xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                    type="submit"
+                    disabled={!topic.trim()}
+                    className="rgb-button w-full py-5 font-bold rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                   >
-                    {currentQuestionIndex === quizData.quiz.questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
-                    <ChevronRight className="w-5 h-5" />
+                    Generate Quiz
+                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
-                </motion.div>
-              )}
-            </motion.div>
-          </AnimatePresence>
+                </motion.form>
+
+              </div>
+
+            </main>
+          </section>
         </div>
-      </div>
-    );
-  }
 
-  return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-blue-500/30">
-
-      <a
-        href="https://www.instagram.com/kdsingh9140?utm_source=qr&igsh=Zm8waDhreHRmbGRp"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="instagram-icon"
-      >
-        <i className="fab fa-instagram slide-icon"></i>
-      </a>
-
-
-      {/* Background Decorative Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-500/10 blur-[120px] rounded-full" />
-        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-purple-500/10 blur-[120px] rounded-full" />
-      </div>
-
-      <main className="relative max-w-4xl mx-auto px-6 py-20 md:py-32">
-        <div className="space-y-12">
-          {/* Hero Section */}
-          <div className="space-y-6 text-center md:text-left">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 text-xs font-bold uppercase tracking-widest"
-            >
-
-              <Brain className="w-4 h-4" />
-              AI-Powered Learning
-              <bold>DEVLOPED BY KDSINGH😊</bold>
-
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-bold tracking-tight leading-[0.9]"
-            >
-              GENERATE <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">SMART QUIZZES</span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-lg md:text-xl text-gray-400 max-w-xl"
-            >
-              Create professional multiple-choice quizzes on any topic in seconds.
-              Powered by AI for accuracy and depth.
-            </motion.p>
-          </div>
-
-          {/* Configuration Form */}
-          <motion.form
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            onSubmit={handleStartQuiz}
-            className="grid gap-8 bg-[#141414] border border-white/10 rounded-[32px] p-8 md:p-10"
-          >
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="topic" className="text-xs font-bold text-gray-500 uppercase tracking-widest">Topic</label>
-                <input
-                  id="topic"
-                  type="text"
-                  placeholder="e.g. Quantum Physics, World History, React Hooks..."
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-gray-600"
-                  required
-                />
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                    <Settings2 className="w-3 h-3" />
-                    Difficulty
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(['easy', 'medium', 'hard'] as Difficulty[]).map((d) => (
-                      <button
-                        key={d}
-                        type="button"
-                        onClick={() => setDifficulty(d)}
-                        className={`py-3 rounded-xl border text-sm font-medium capitalize transition-all ${difficulty === d
-                          ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20'
-                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
-                          }`}
-                      >
-                        {d}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                    <Layout className="w-3 h-3" />
-                    Questions
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-
-                    {[1, 5, 10].map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => handleSetNumQuestions(n)}
-                        className={`py-3 px-4 rounded-xl border text-sm font-medium transition-all ${numQuestions === n
-                          ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20'
-                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
-                          }`}
-                      >
-                        {n}
-                      </button>
-                    ))}
-                    <div className="flex items-center justify-center gap-4 mt-4">
-                      <button
-                        onClick={() => handleSetNumQuestions(numQuestions - 1)}
-                        className="px-4 py-2 bg-white/10 rounded-lg text-white"
-                      >
-                        ➖
-                      </button>
-
-                      <span className="text-lg font-semibold">{numQuestions}</span>
-
-                      <button
-                        onClick={() => handleSetNumQuestions(numQuestions + 1)}
-                        className="px-4 py-2 bg-white/10 rounded-lg text-white"
-                      >
-                        ➕
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="context" className="text-xs font-bold text-gray-500 uppercase tracking-widest">Context (Optional)
-                  <input
-                    type="range"
-                    min={MIN}
-                    max={MAX}
-                    step={1}
-                    value={numQuestions}
-                    onChange={(e) => handleSetNumQuestions(Number(e.target.value))}
-                    className="w-full mt-4"
-                  />
-
-                  <p className="text-center mt-2 text-gray-300">
-                    Questions: {numQuestions}
-                  </p>
-                </label>
-                <textarea
-                  id="context"
-                  placeholder="Paste text here to generate questions specifically from it..."
-                  value={context}
-                  onChange={(e) => setContext(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-lg focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-gray-600 min-h-[120px] resize-none"
-                />
-              </div>
-            </div>
-
-            {error && (
-              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={!topic.trim()}
-              className="w-full py-5 bg-white text-black font-bold rounded-2xl hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 group"
-            >
-              Generate Quiz
-              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </motion.form>
-        </div>
-      </main>
-    </div>
-  );
-}
+      );
+    }
